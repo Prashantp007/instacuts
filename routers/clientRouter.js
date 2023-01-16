@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const clientController = require('../controller/clientDetailController');
 const upload = require('../middleware/multer')
+const {verify}= require('../middleware/authClient')
 
-router.post('/signUp_client', upload.any(), clientController.signUpClient);
-router.post('/add-client-address', clientController.addClientAddress);
-router.patch('/clientAcc-verification', clientController.clientAccountVerification);
-router.get('/signIn_client', clientController.signInClient);
-router.get('/show-client-address', clientController.showClientAddress);
+router.post('/sign_up', upload.any(), clientController.signUpClient);
+router.post('/add-address', clientController.addClientAddress);
+router.patch('/acc-verification', clientController.clientAccountVerification);
+router.get('/sign_in', clientController.signInClient);
+router.get('/show-address',verify, clientController.showClientAddress);
+router.delete('/remove-address',verify, clientController.removeClientAddress);
 
 module.exports = router;

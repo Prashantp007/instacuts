@@ -1,12 +1,12 @@
 const response = require("../helper/response");
-const model = require("../models");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const { where } = require("sequelize");
+// const model = require("../models");
 // const clientDetail = model.clientDetail;
 // const clientAddress = model.clientAddress;
 const { clientDetail, clientAddress } = require("../models");
-const { sign } = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 // sign up client account ---------------------
 exports.signUpClient = [
@@ -46,6 +46,11 @@ exports.signUpClient = [
                 where: { mobile_number: req.body.mobile_number },
             });
             if (findAcc) {
+                fs.unlink('./public/'+req.files[0].filename, function (err) {
+                    if (err) throw err;
+                    // if no error, file has been deleted successfully
+                    console.log('File deleted!');
+                });
                 // console.log("yyyyyyyyyyyyyyy");
                 return response.failedResponse(res, "account is allready exist ...");
             } else {
@@ -187,8 +192,16 @@ exports.signInClient = [
             if (!comparePassword)
                 return response.failedResponseStatus(res, 401, "password is wrong ...")
             // console.log(comparePassword);
+            if (sign_inClient.is_verify != true)
+                return response.failedResponse(res, "account is not verified ...")
             const showSign_inClient = await clientDetail.findOne({ where: { mobile_number: req.query.mobile_number }, attributes: ['first_name', 'last_name'] });
-            return response.successResponse(res, { msg: "sign in successfully ...", detail: showSign_inClient });
+            const genToken =  jwt.sign({id:sign_inClient.id}, 'asdfgh');
+            // console.log("aaaaaaaaaaaaaaaaaaaaa:   ",sign_inClient.id)
+            const token = genToken ? genToken: "";
+            if(!genToken)
+                return response.failedResponse(res, "token couldn't create ...")
+            return response.successResponse(res, { msg: "sign in successfully ...", detail: showSign_inClient , token: token});
+
 
             // console.log(sign_inClient);
         } catch (error) {
@@ -196,18 +209,48 @@ exports.signInClient = [
         }
     }
 ]
+
 // show client address -------------------
 exports.showClientAddress = [
     async function (req, res) {
         try {
-            const showClientAddress = await clientAddress.findAll({ where: { client_id: req.query.id } });
-            console.log(showClientAddress);
+            
+            const checkAccVerification = await clientDetail.findOne({where:{id:req.user.id}});
+            console.log(checkAccVerification.is_verify); 
+            if (checkAccVerification.is_verify != true)
+                return response.failedResponse(res, "account is not verified ...")
+
+            const showClientAddress = await clientAddress.findAll({ where: { client_id: req.user.id } });
+            // console.log(showClientAddress);
             if (showClientAddress.length == 0)
-                return response.failedResponse(res, "user not showing...");
+                return response.failedResponse(res, "user not showing...");            
             return response.successResponse(res, showClientAddress);
 
         } catch (error) {
-            return response.failedResponse(req, error.message)
+            return response.failedResponse(res, error.message)
+        }
+    }
+]
+// remove client address -------------------
+exports.removeClientAddress = [
+    async function (req, res) {
+        try {
+            
+            const checkAccVerification = await clientDetail.findOne({where:{id:req.user.id}});
+            console.log(checkAccVerification.is_verify); 
+            if (checkAccVerification.is_verify != true)
+                return response.failedResponse(res, "account is not verified ...")
+
+                const showClientRemoveAddress = await clientAddress.findOne({ where: { client_id: req.user.id , from:req.body.from} });
+                if(!showClientRemoveAddress)
+                    return response.failedResponseStatus(res, 401,`${req.body.from} address not found ...`)
+                await clientAddress.destroy({ where: { client_id: req.user.id , from:req.body.from} });
+                // console.log(showClientAddress);
+                return response.failedResponse(res, showClientRemoveAddress);
+           
+
+        } catch (error) {
+            return response.failedResponse(res, error.message)
         }
     }
 ]
