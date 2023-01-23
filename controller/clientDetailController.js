@@ -7,6 +7,7 @@ const { where } = require("sequelize");
 // const clientAddress = model.clientAddress;
 const { clientDetail, clientAddress } = require("../models");
 const jwt = require("jsonwebtoken");
+const fs = require('fs')
 
 // sign up client account ---------------------
 exports.signUpClient = [
@@ -64,13 +65,10 @@ exports.signUpClient = [
                     DOB: req.body.DOB,
                     gender: req.body.gender,
                     profile_picture: req.files[0].filename,
-                    OTP: Math.floor(Math.random() * 9000 + 1000),
                 };
                 // console.log("======>>>>>>>", payload);
-                await clientDetail.create(payload);
-                const findCreatedAcc = await clientDetail.findOne({
-                    where: { mobile_number: req.body.mobile_number },
-                });
+                
+                const findCreatedAcc = await clientDetail.create(payload);
                 return response.successResponse(res, { msg: "account is created ...", data: findCreatedAcc, });
 
                 //   const detail = await clientDetail.();
@@ -81,6 +79,34 @@ exports.signUpClient = [
         }
     },
 ];
+// send-Otp client ------------------
+exports.sendOtpclient = [
+    async function (req, res) {
+        try {
+            // console.log("aaaaaaaaaaaaaaaaaaaa");
+            const findclient = await clientDetail.findOne({ where: { mobile_number: req.body.mobile_number } });
+            // console.log("bbbbbbbbbbbbbbbbbbbb",findServiceProvider);      
+
+            if (findclient == null) {
+                return response.failedResponse(res, "mobile number not exist ...");
+            } else {
+                const comPassword = await bcrypt.compare(req.body.password, findclient.password);
+                if (comPassword == false)
+                    return response.failedResponse(res, "wrong password ...");
+            }
+            // console.log("cccccccccccccccccccc",findclient)
+            if (findclient.is_verify != false)
+                return response.failedResponse(res, "account is already verified ...");
+
+            // console.log("yyyyyyyyyyyyyyyyyyyyyysssss")
+            await findclient.update({ OTP: Math.floor(Math.random() * 9000 + 1000), }, { where: { mobile_number: req.body.mobile_number } })
+            const updatedClient = await clientDetail.findOne({ where: { mobile_number: req.body.mobile_number } });
+            return response.successResponse(res, { msg: "otp is send to your mobile number ...", data: updatedClient });
+        } catch (error) {
+            return response.failedResponse(res, error.message);
+        }
+    }
+]
 // client account verification ----------------
 exports.clientAccountVerification = [
     body("OTP").notEmpty().isLength({ min: 4, max: 4 }).withMessage("please enter 4 digit OTP ..."),
@@ -121,6 +147,35 @@ exports.clientAccountVerification = [
         }
     },
 ];
+// sign in client account -------------------
+exports.signInClient = [
+    async function (req, res) {
+        try {
+            // console.log("jwt.................",process.env.JWT);
+            const sign_inClient = await clientDetail.findOne({ where: { mobile_number: req.query.mobile_number } },);
+            if (sign_inClient == null)
+                return response.failedResponse(res, "mobile no. not exist ...");
+            const comparePassword = await bcrypt.compare(req.query.password, sign_inClient.password);
+            if (!comparePassword)
+                return response.failedResponseStatus(res, 401, "password is wrong ...")
+            // console.log(comparePassword);
+            if (sign_inClient.is_verify != true)
+                return response.failedResponse(res, "account is not verified ...")
+            const showSign_inClient = await clientDetail.findOne({ where: { mobile_number: req.query.mobile_number }, attributes: ['first_name', 'last_name'] });
+            const genToken =  jwt.sign({id:sign_inClient.id}, process.env.JWT);
+            // console.log("aaaaaaaaaaaaaaaaaaaaa:   ",sign_inClient.id)
+            const token = genToken ? genToken: "";
+            if(!genToken)
+                return response.failedResponse(res, "token couldn't create ...")
+            return response.successResponse(res, { msg: "sign in successfully ...", detail: showSign_inClient , token: token});
+
+
+            // console.log(sign_inClient);
+        } catch (error) {
+            return response.failedResponse(res, error.message)
+        }
+    }
+]
 // add client address ----------------------
 exports.addClientAddress = [
     body("mobile_number").notEmpty().trim(),
@@ -168,8 +223,8 @@ exports.addClientAddress = [
                         from: req.body.from
                     };
                     // console.log("payload :  ",payload)
-                    await clientAddress.create(payload);
-                    const createdClientAddress = await clientAddress.findOne({ where: { client_id: findAcc.id, from: req.body.from } })
+                    
+                    const createdClientAddress = await clientAddress.create(payload);
                     if (!createdClientAddress)
                         return response.failedResponse(res, "couldnot show address ...");
                     else
@@ -181,35 +236,6 @@ exports.addClientAddress = [
         }
     },
 ];
-// sign in client account -------------------
-exports.signInClient = [
-    async function (req, res) {
-        try {
-            const sign_inClient = await clientDetail.findOne({ where: { mobile_number: req.query.mobile_number } },);
-            if (sign_inClient == null)
-                return response.failedResponse(res, "mobile no. not exist ...");
-            const comparePassword = await bcrypt.compare(req.query.password, sign_inClient.password);
-            if (!comparePassword)
-                return response.failedResponseStatus(res, 401, "password is wrong ...")
-            // console.log(comparePassword);
-            if (sign_inClient.is_verify != true)
-                return response.failedResponse(res, "account is not verified ...")
-            const showSign_inClient = await clientDetail.findOne({ where: { mobile_number: req.query.mobile_number }, attributes: ['first_name', 'last_name'] });
-            const genToken =  jwt.sign({id:sign_inClient.id}, 'asdfgh');
-            // console.log("aaaaaaaaaaaaaaaaaaaaa:   ",sign_inClient.id)
-            const token = genToken ? genToken: "";
-            if(!genToken)
-                return response.failedResponse(res, "token couldn't create ...")
-            return response.successResponse(res, { msg: "sign in successfully ...", detail: showSign_inClient , token: token});
-
-
-            // console.log(sign_inClient);
-        } catch (error) {
-            return response.failedResponse(res, error.message)
-        }
-    }
-]
-
 // show client address -------------------
 exports.showClientAddress = [
     async function (req, res) {

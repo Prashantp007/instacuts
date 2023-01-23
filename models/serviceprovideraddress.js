@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      serviceProviderAddress.belongsTo(models.serviceProvider,{foreignKey:'serviceProvider_id'})
     }
   }
   serviceProviderAddress.init({

@@ -1,0 +1,177 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Instacuts",
+        "description": "Instacuts api's",
+        "version": "1.0.0"
+    },
+    "tags": [
+        {
+            "name": "list of api",
+            "description": "list"
+        }
+    ],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+  
+    "paths": { 
+        "/client/signUp": {
+            "post": {
+                "tags": [
+                    "client"
+                ],
+                "description": "First process sign-up for client",
+                "operationId": "signup",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/signUp"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/signUp"
+                            }
+                        },
+                        "application/xml": {
+                            "schema": {
+                                "$ref": "#/components/schemas/signUp"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        },
+        "/client/signIn": {
+            "get": {
+                "tags": [
+                    "client"
+                ],
+                "description": "First process sign_in for client",
+                "operationId": "signup",
+                "parameters": [
+                    {
+                        "name": "mobile_number",
+                        "in": "query",
+                        "description": "Enter mobile_number",
+                        "type": "number",
+                        "example": "985746215"
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "Enter password",
+                        "type": "string",
+                        "example": "554sdf454d"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/serviceProvider/allDetail": {
+            "get": {
+                "tags": [
+                    "service-provider"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "show all detail service-provider ",
+                "operationId": "all-detail",
+                
+                "responses": {}
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "Find out more about Swagger",
+        "url": "http://swagger.io"
+    },
+    "servers": [
+        {
+            "url": "http://192.168.1.180:1005"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "signUp": {
+                "type": "object",
+                "required": [
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "mobile_number",
+                    "password",
+                    "gender",
+                    "DOB",
+                    "profile_picture"
+                ],
+                "properties": {
+                    "first_name": {
+                        "type": "string",
+                        "example": "Ram",
+                        "description": "compulsary"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Kumar",
+                        "description": "compulsary"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ram@gmail.com",
+                        "description": "compulsary"
+                    },
+                    "mobile_number": {
+                        "type": "string",
+                        "example": "9854762546",
+                        "description": "compulsary"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "5468ADDEd@",
+                        "description": "compulsary"
+                    },
+                    "gender": {
+                        "type": "enum",
+                        "example": "male",
+                        "description": "compulsary"
+                    },
+                    "DOB": {
+                        "type": "date",
+                        "example": "1998-01-25",
+                        "description": "compulsary"
+                    },
+                    "profile_picture": {
+                        "type": "file",
+                        "description": "compulsary"
+                    }
+                }
+            }
+        }
+    }
+}

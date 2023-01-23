@@ -11,13 +11,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      serviceProvider.hasMany(models.serviceProviderAddress, { foreignKey: 'serviceProvider_id' })
+      serviceProvider.hasMany(models.serviceProviderDetail, {as:'detail', foreignKey: 'serviceProvider_id' })
+      serviceProvider.hasMany(models.serviceProviderImages, { foreignKey: 'serviceProvider_id' })
     }
   }
   serviceProvider.init({
     first_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
     DOB: DataTypes.DATE,
-    gender: DataTypes.ENUM('male','female'),
+    gender: DataTypes.ENUM('male', 'female'),
     mobile_number: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
