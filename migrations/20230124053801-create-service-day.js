@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('customServices', {
+    await queryInterface.createTable('serviceDays', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -15,22 +15,8 @@ module.exports = {
         onDelete: "cascade",
         onUpdate: "no action"
       },
-      titel: {
-        type: Sequelize.STRING
-      },
-      description: {
-        type: Sequelize.TEXT
-      },
-      category: {
-        type: Sequelize.ENUM('1', '2', '3'),
-        comment: '1 => hairCare, 2 => facialCare, 3 => nailCare'
-      },
-      price: {
-        type: Sequelize.INTEGER
-      },
-      availableFor: {
-        type: Sequelize.ENUM('1', '2', '3', '4'),
-        comment: '1 => men, 2 => women, 3 => kids, 4 => seniors'
+      day: {
+        type: Sequelize.ENUM("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
       },
       createdAt: {
         allowNull: false,
@@ -43,6 +29,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('customServices');
+    await queryInterface.dropTable('serviceDays');
   }
 };

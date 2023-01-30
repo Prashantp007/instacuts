@@ -3,14 +3,17 @@ const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const fs = require('fs');
 const jwt = require('jsonwebtoken')
-const { 
-    serviceProvider, 
-    serviceProviderAddress, 
-    serviceProviderDetail, 
+const {
+    serviceProvider,
+    serviceProviderAddress,
+    serviceProviderDetail,
     serviceProviderImages,
-    customServices } = require('../models');
+    customServices,
+    serviceDay,
+    timeSlote } = require('../models');
 const { resolve } = require('path');
-
+const { Certificate } = require('crypto');
+const { Op } = require('sequelize')
 // signUp serviceProvider --------------------
 exports.signUpServiceProvider = [
     body("first_name").notEmpty().trim().isString(),
@@ -58,7 +61,7 @@ exports.signUpServiceProvider = [
                 profile_picture: req.files[0].filename,
             };
             // console.log(serviceProviderPayload);
-            
+
             const createdAccount = await serviceProvider.create(serviceProviderPayload);
             if (!createdAccount)
                 return response.failedResponse(res, "couldn't find created Account ...");
@@ -174,7 +177,7 @@ exports.addServiceProviderAddress = [
                 longitude: req.body.longitude
             };
             // console.log(addressPayload);
-            
+
             const createdAddress = await serviceProviderAddress.create(addressPayload);
             return response.successResponse(res, { msg: "address is added ...", data: createdAddress });
 
@@ -203,7 +206,7 @@ exports.addServiceProviderDetail = [
                 drivingLicense: req.body.drivingLicense
             };
             // console.log(addressPayload);
-            
+
             const createdDetail = await serviceProviderDetail.create(addressPayload);
             return response.successResponse(res, { msg: "detail is added ...", data: createdDetail });
 
@@ -294,7 +297,7 @@ exports.showAllDetails = [
                 }]
             },
 
-            )            
+            )
             return response.successResponse(res, findDetail)
         } catch (error) {
             return response.failedResponse(res, error.message);
@@ -302,29 +305,119 @@ exports.showAllDetails = [
     }
 ]
 
-// create custom service -----------------
-exports.createCustomService =[async function(req, res){
-    try {
-        const findServices = await customServices.findOne({where:{serviceProvider_id:req.user.id}});
-        // console.log("============>>>>>>>>>>>>>> ",findCustomServices);
-        if(findServices != null){
-            return response.failedResponse(res, "custom services is alredy exist ...")
-        }
-        const customServicesPayload = {
-            serviceProvider_id:req.user.id,
-            titel:req.body.titel,
-            description:req.body.description,
-            category:req.body.category,
-            price:req.body.price,
-            availableFor:req.body.availableFor
-        }
-        // console.log(customServicesPayload);
-        const createService = await customServices.create(customServicesPayload);
-        if(!createService)
-            return response.failedResponse(res, "couldnot create services ...")
-        return response.successResponse(res, {msg:"service created ...",data: createService})
 
-    } catch (error) {
-        return response.failedResponse(res, error.message);
+
+// ------------------------------------- services ---------------------------------------
+
+// create custom service -----------------
+exports.createCustomService = [
+    async function (req, res) {
+        try {
+            const findServices = await customServices.findOne({ where: { serviceProvider_id: req.user.id } });
+            // console.log("============>>>>>>>>>>>>>> ",findCustomServices);
+            if (findServices != null || findServices.category == req.body.category) {
+                return response.failedResponse(res, "custom service alredy exist ...")
+            }
+            const customServicesPayload = {
+                serviceProvider_id: req.user.id,
+                titel: req.body.titel,
+                description: req.body.description,
+                category: req.body.category,
+                price: req.body.price,
+                availableFor: req.body.availableFor
+            }
+            // console.log(customServicesPayload);
+            const createService = await customServices.create(customServicesPayload);
+            if (!createService)
+                return response.failedResponse(res, "couldnot create services ...")
+            return response.successResponse(res, { msg: "service created ...", data: createService })
+
+        } catch (error) {
+            return response.failedResponse(res, error.message);
+        }
     }
-}]
+]
+// delete custom service --------------------
+exports.deleteCustomService = [
+    async function (req, res) {
+        try {
+            // console.log("Ddddddddddddddddddddddddddddddddddddd");
+            const findCustomServices = await customServices.findOne({ where: { serviceProvider_id: req.user.id, category: req.body.category } })
+            if (findCustomServices == null)
+                return response.failedResponse(res, "custom service not found");
+            const deleteCustomServices = await customServices.destroy({ where: { erviceProvider_id: req.user.id, category: req.body.category } })
+            if (!deleteCustomServices)
+                return response.failedResponse(res, "service couldnot deleted ...")
+            return response.successResponse(res, { msg: "service deleted ...", data: findCustomServices });
+
+        } catch (error) {
+            return response.failedResponse(res, error.message);
+        }
+    }
+]
+// add shadule
+exports.setSchedule = [
+    body("slot_to").notEmpty(),
+    body("slot_from").notEmpty(),
+    async function (req, res) {
+
+        try {
+            // console.log("Ddddddddddddddddddddddddddddddddddddd\n");
+            const errors = validationResult(req);
+            if (!errors.isEmpty())
+                return response.failedResponse(res, errors.array());
+
+            let requestBody = req.body;
+            console.log("RequestData =======>>>>>>>>>", req.user.id, requestBody.day, requestBody.slot_to, requestBody.slot_from);
+
+            const findDay = await serviceDay.findOne({ where: { serviceProvider_id: req.user.id, day: req.body.day } });
+            let dayId;
+            if (findDay == null) {
+                const payload = {
+                    serviceProvider_id: req.user.id,
+                    day: req.body.day
+                }
+                const createDay = await serviceDay.create(payload)
+                dayId = createDay.id;
+            } else {
+                dayId = findDay.id;
+            }
+            // console.log("============>>>>>>>>", dayId);
+            const findTimeSlote = await timeSlote.findOne({
+                where: {
+                    day_id: dayId,
+                    //  slot_to:{[Op.lte]:req.body.slot_to},
+                    [Op.or]: [{
+                        [Op.and]: [{ slot_to: { [Op.lte]: req.body.slot_to } },
+                        { slot_from: { [Op.gte]: req.body.slot_to } }]
+                    },
+                    {
+                        [Op.and]: [{ slot_to: { [Op.lte]: req.body.slot_from } },
+                        { slot_from: { [Op.gte]: req.body.slot_from } }]
+                    }]
+                }
+            });
+            // console.log("===========>>>>>>>>>>>>>>", findTimeSlote)
+            if (findTimeSlote != null) {
+                return response.failedResponse(res, "slot timing matched ...");
+            } else {
+                let slotPayload = {
+                    day_id: dayId,
+                    slot_to: req.body.slot_to,
+                    slot_from: req.body.slot_from
+                }
+                console.log(slotPayload)
+            }
+            // const createSlot = await timeSlote.create(slotPayload);
+            // if(!createSlot) 
+            //     return response.failedResponse(res, "timeSlot couldn't created ...")
+
+            // return response.successResponse(res, { msg: "schedule is created ...", data: { day: req.body.day, slot: createSlot } })
+
+
+
+        } catch (err) {
+            return response.failedResponse(res, err.message);
+        }
+    }
+]

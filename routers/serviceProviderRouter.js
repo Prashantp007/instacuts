@@ -13,8 +13,10 @@ router.patch('/addPersonalizeDetail', verify, serviceProviderController.addServi
 router.post('/addPicture', verify,upload.any(), serviceProviderController.addServiceProviderPictures);
 router.get('/allDetail', verify, serviceProviderController.showAllDetails);
 
-// create custom services ----------------- 
+// -------------------- services ----------------- 
 router.post('/createCustomServices', verify, serviceProviderController.createCustomService);
+router.delete('/deleteCustomServices', verify, serviceProviderController.deleteCustomService);
+router.post('/setSchedule', verify, serviceProviderController.setSchedule);
 
 
 
