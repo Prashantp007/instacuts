@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       serviceProvider.hasMany(models.serviceProviderAddress, { foreignKey: 'serviceProvider_id' })
       serviceProvider.hasMany(models.serviceProviderDetail, {as:'detail', foreignKey: 'serviceProvider_id' })
       serviceProvider.hasMany(models.serviceProviderImages, { foreignKey: 'serviceProvider_id' })
+      
+      serviceProvider.hasMany(models.customServices, { foreignKey: 'serviceProvider_id' })
+      serviceProvider.hasMany(models.serviceDay, { foreignKey: 'serviceProvider_id' })
+
     }
   }
   serviceProvider.init({

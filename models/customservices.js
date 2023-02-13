@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      customServices.belongsTo(models.serviceProvider,{foreignKey:'serviceProvider_id'});
+      customServices.hasMany(models.service_review,{foreignKey:'service_id'});
+      customServices.hasMany(models.cart,{foreignKey:'service_id'});
+      customServices.hasMany(models.orderdList,{foreignKey:'service_id'});
     }
   }
   customServices.init({

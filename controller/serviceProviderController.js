@@ -10,10 +10,13 @@ const {
     serviceProviderImages,
     customServices,
     serviceDay,
-    timeSlote } = require('../models');
+    timeSlote,
+    sequelize } = require('../models');
 const { resolve } = require('path');
 const { Certificate } = require('crypto');
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
+const Sequelize = require('sequelize')
+
 // signUp serviceProvider --------------------
 exports.signUpServiceProvider = [
     body("first_name").notEmpty().trim().isString(),
@@ -313,11 +316,12 @@ exports.showAllDetails = [
 exports.createCustomService = [
     async function (req, res) {
         try {
-            const findServices = await customServices.findOne({ where: { serviceProvider_id: req.user.id } });
-            // console.log("============>>>>>>>>>>>>>> ",findCustomServices);
-            if (findServices != null || findServices.category == req.body.category) {
+            const findServices = await customServices.findOne({ where: { serviceProvider_id: req.user.id, category: req.body.category, availableFor: req.body.availableFor } });
+            console.log("============>>>>>>>>>>>>>> ", findServices);
+            if (findServices != null)
                 return response.failedResponse(res, "custom service alredy exist ...")
-            }
+            console.log("111111111111111111111")
+            // return
             const customServicesPayload = {
                 serviceProvider_id: req.user.id,
                 titel: req.body.titel,
@@ -326,7 +330,7 @@ exports.createCustomService = [
                 price: req.body.price,
                 availableFor: req.body.availableFor
             }
-            // console.log(customServicesPayload);
+            console.log(customServicesPayload);
             const createService = await customServices.create(customServicesPayload);
             if (!createService)
                 return response.failedResponse(res, "couldnot create services ...")
@@ -355,7 +359,7 @@ exports.deleteCustomService = [
         }
     }
 ]
-// add shadule
+// add shadule --------------------
 exports.setSchedule = [
     body("slot_to").notEmpty(),
     body("slot_from").notEmpty(),
@@ -372,6 +376,7 @@ exports.setSchedule = [
 
             const findDay = await serviceDay.findOne({ where: { serviceProvider_id: req.user.id, day: req.body.day } });
             let dayId;
+            let day;
             if (findDay == null) {
                 const payload = {
                     serviceProvider_id: req.user.id,
@@ -379,6 +384,8 @@ exports.setSchedule = [
                 }
                 const createDay = await serviceDay.create(payload)
                 dayId = createDay.id;
+                day = createDay.day;
+                // console.log("===============>>>>>>>>>>",day)
             } else {
                 dayId = findDay.id;
             }
@@ -398,21 +405,21 @@ exports.setSchedule = [
                 }
             });
             // console.log("===========>>>>>>>>>>>>>>", findTimeSlote)
-            if (findTimeSlote != null) {
+            if (findTimeSlote != null)
                 return response.failedResponse(res, "slot timing matched ...");
-            } else {
-                let slotPayload = {
-                    day_id: dayId,
-                    slot_to: req.body.slot_to,
-                    slot_from: req.body.slot_from
-                }
-                console.log(slotPayload)
-            }
-            // const createSlot = await timeSlote.create(slotPayload);
-            // if(!createSlot) 
-            //     return response.failedResponse(res, "timeSlot couldn't created ...")
 
-            // return response.successResponse(res, { msg: "schedule is created ...", data: { day: req.body.day, slot: createSlot } })
+            let slotPayload = {
+                day_id: dayId,
+                slot_to: req.body.slot_to,
+                slot_from: req.body.slot_from
+            }
+            console.log(slotPayload)
+
+            const createSlot = await timeSlote.create(slotPayload);
+            if (!createSlot)
+                return response.failedResponse(res, "timeSlot couldn't created ...")
+
+            return response.successResponse(res, { msg: "schedule is created ...", data: { day: day, slot: createSlot } })
 
 
 

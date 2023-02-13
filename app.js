@@ -13,99 +13,286 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 const clientRouter = require('./routers/clientRouter');
 const serviceProvider = require('./routers/serviceProviderRouter');
+const orderRouter = require('./routers/orderRouter');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/client', clientRouter);
 app.use('/serviceProvider', serviceProvider);
+app.use('/order', orderRouter);
 
 app.get("/", (req, res) => res.send("home page...."))
-  .listen(PORT, () => console.log(`Server is up and running on ${PORT} ...`));
+    .listen(PORT, () => console.log(`Server is up and running on ${PORT} ...`));
 
 
 
 
-// let arr = [
-//   {
-//     id: 10, qty: 5, total: 10,
-//     modifiers: [{ mid: "16", mqty: 55, mtotal: 150 }, { mid: "1", mqty: 45, mtotal: 19 }],
-//   },
-//   {
-//     id: 3, qty: 5, total: 10,
-//     modifiers: [{ mid: "5", mqty: 4, mtotal: 120 }],
-//   },
-//   {
-//     id: 1, qty: 5, total: 10,
-//     modifiers: [{ mid: "1", mqty: 8, mtotal: 150 }],
-//   },
-//   {
-//     id: 3, qty: 54, total: 10,
-//     modifiers: [{ mid: "5", mqty: 55, mtotal: 150 }],
-//   },
-//   {
-//     id: 1, qty: 9, total: 10,
-//     modifiers: [{ mid: "1", mqty: 5, mtotal: 189 }],
-//   },
-// ];
-
-// let finalArray = [], countArray = []
-// for (const iteration of arr) {
-//   let obj = {
-//     id: iteration['id'],
-//     qty: iteration['qty'],
-//     total: iteration['total'],
-//     Modifiers: iteration.modifiers
-//   }
-//   for (var check1 of iteration.modifiers) {
-
-   
-//   }
-//   for (const iteration1 of arr) {
-//     for (var check2 of iteration1.modifiers) {
-//     }
-//     if (iteration.id == iteration1.id && arr.indexOf(iteration) != arr.indexOf(iteration1)&&check1.mid==check2.mid) {
-//       var mcheck =iteration.id;
-//       obj['id'] = iteration['id']
-//       obj['qty'] = obj['qty'] + iteration1['qty']
-//       obj['total'] = obj['total'] + iteration1['total']
 
 
-//       let Mod = []
-//       for (const val of iteration.modifiers) {
-//         var MObj = {
-//           mid: val.mid,
-//           mqty: val.mqty,
-//           mtotal: val.mtotal
-//         }
-//         for (const val1 of iteration1.modifiers) {
-//           if (val.mid == val1.mid) {
-//             val.mid = val1.mid,
-//               val.mqty = val1.mqty + val.mqty,
-//               val.mtotal = val1.mtotal + val.mtotal
+let newArr = [
+    {
+        "section_id": 43,
+        "item_id": 159,
+        "rough": false,
+        "order_items_addon": [],
+        "special_notes": "",
+        "ar_special_notes": "some random notes",
+        "amount": 2,
+        "quantity": 1
+    },
+    {
+        "section_id": 43,
+        "item_id": 159,
+        "rough": false,
+        "order_items_addon": [],
+        "ar_special_notes": "some random notes",
+        "amount": 4,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 167,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 110,
+                "price": 0,
+                "quantity": 1
+            }
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 167,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 110,
+                "price": 0,
+                "quantity": 1
+            }
 
-//             Mod.push(val)
-//           }
-//           else {
-//             //iteration.modifiers.push(val1)
-//             Mod.push(val1)
-//             Mod.push(val)
-//           }
-//         }
-//       }
-//       obj.Modifiers = Mod
-//     }
-//   }
-//   // console.log("Iteration---------->>>",iteration.modifiers)
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 167,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 110,
+                "price": 0,
+                "quantity": 1
+            }
 
-//   if (!countArray.includes(iteration.id)) {
-//       // console.log("Object-------->>>>>>>>",obj)
-//     finalArray.push(obj)
-//   }
-//   // if(mcheck){
-//   countArray.push(iteration.id)
-//   // }
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 167,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            }
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 169,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            }
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+    {
+        "section_id": 19,
+        "item_id": 167,
+        "order_items_addon": [
+            {
+                "option_group_id": 51,
+                "option_item_id": 106,
+                "price": 0,
+                "quantity": 1
+            },
+            {
+                "option_group_id": 51,
+                "option_item_id": 107,
+                "price": 0,
+                "quantity": 1
+            }
+        ],
+        "ar_special_notes": "some random notes",
+        "amount": 70,
+        "quantity": 1
+    },
+]
+
+let finalArray = [],countArray = []
+for (const iteration of newArr) {
+  let flag = 0,flag1 = 0,finalCheck =0,itemCheck = 0
+  for (const iteration1 of newArr) {
+      if (iteration.item_id == iteration1.item_id && newArr.indexOf(iteration) != newArr.indexOf(iteration1)) {
+        if(iteration.order_items_addon.length == iteration1.order_items_addon.length) {
+          itemCheck++
+          iteration['item_id'] = iteration['item_id']
+          iteration['quantity'] = iteration['quantity'] + iteration1['quantity']
+          iteration['amount'] = iteration['amount'] + iteration1['amount']
+          iteration['section_id'] = iteration1['section_id']
+            if(iteration.order_items_addon.length> 0 && iteration1.order_items_addon.length>0) {
+              for(const check of iteration.order_items_addon) {
+                for(const check1 of iteration1.order_items_addon) {
+                  if(check.option_item_id == check1.option_item_id) {
+                    flag1++
+                  }
+                }
+              }
+            } 
+            if(flag1 == iteration.order_items_addon.length && flag1 == iteration1.order_items_addon.length){
+              flag++
+              for(let iteration2 of iteration.order_items_addon) {
+                for(let iteration3 of iteration1.order_items_addon) {
+                  if(iteration2.option_item_id == iteration3.option_item_id) {
+                    iteration2.price +=  iteration2.price + iteration3.price
+                    iteration2.quantity +=  iteration2.quantity + iteration3.quantity 
+                  }
+                }
+              }
+            }  
+        }
+        else {
+          if(countArray.includes(iteration.item_id)) {
+            finalCheck++
+          }
+        }
+       }
+  }
+//console.log("-------------->>>",iteration,"------------>>>>")
+    if(flag>0  && !countArray.includes(iteration.item_id)) {
+      finalArray.push(iteration)
+    }
+    else {
+      // for(const value2 of finalArray) {
+      //   if(value2.item_id == iteration.item_id && iteration.quantity == value2.quantity ) {
+
+      //   }
+      // }
+      
+      if(finalCheck>0 && itemCheck == 0){
+        finalArray.push(iteration)
+      }
+      if(!countArray.includes(iteration.item_id)) {
+        finalArray.push(iteration)
+      }
+    }
+  countArray.push(iteration.item_id)
+}
+
+for(const f4 of finalArray) {
+//   console.log("Final ARray ------------->>>>>>>>>>>",f4)
+}
 
 
+
+
+
+
+// function reverseString(str) {
+//   return str.split("").reverse().join("");
 // }
-// //    console.log("Final Result ------------------->>>>>>>>>>>>",finalArray)
-// for (let key of finalArray) {
-//   // console.log("Final Result ------------------->>>>>>>>>>>>", key)
+// console.log(reverseString("prashant"))
+
+// let str='prashant',newString="";
+// for (var i = str.length - 1; i >= 0; i--) { 
+//   newString += str[i]; // or newString = newString + str[i];
 // }
+// console.log(newString)
+
+// function reverseString(str) {
+//   if (str === "")
+//     return "";
+//   else
+//     return reverseString(str.substr(1)) + str.charAt(0);
+// }
+// console.log(reverseString("hello"));
+
+
+// function aa(a,b){
+//   // let a =8888
+//  let sum =a+b
+//   return sum
+// }
+// function aa(a,b,c){
+//   // let a =8888
+//  let sum =a+b+c
+//   return sum
+// }
+// console.log(aa(15,16))
+// console.log(aa(1,4,6))
