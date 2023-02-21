@@ -1,8 +1,8 @@
-const { Op, where } = require('sequelize');
+const { Op, where, QueryInterface } = require('sequelize');
 const db = require('../models/index');
 const sequelize = db.sequelize;
 const response = require('../helper/response');
-const { body, validationResult } = require('express-validator');
+const { body, validationResult, param } = require('express-validator');
 const moment = require('moment')
 const { clientDetail,
     clientAddress,
@@ -24,6 +24,7 @@ const { convenience_fees,
     discounts,
     vouchers,
     taxes } = require('../helper/constant');
+const { compareSync } = require('bcrypt');
 
 
 
@@ -748,3 +749,14 @@ exports.giveReviewOnService = [
 
 // let currentDate = moment().format("YYYY-MM-DD")
 // console.log("2023-02-10">currentDate);
+
+function ab(o){
+return o.a+o.b;
+}
+
+obj={
+    a:10,
+    b:50
+}
+// console.log(ab(obj))
+
